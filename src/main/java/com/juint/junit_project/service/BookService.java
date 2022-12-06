@@ -1,5 +1,8 @@
 package com.juint.junit_project.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,11 @@ public class BookService {
     }
 
     // 2. 책 목록
+    public List<BookResDto> findAll() {
+        return bookRepository.findAll().stream()
+                .map(new BookResDto()::toDto)
+                .collect(Collectors.toList());
+    }
     // 3. 책 상세
     // 4. 책 삭제
     // 5. 책 수정
