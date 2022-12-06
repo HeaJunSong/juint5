@@ -30,4 +30,8 @@ public class Book {
         this.author = author;
     }
 
+    public boolean isPresent() {
+        return false;
+    }
+
 }

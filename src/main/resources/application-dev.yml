@@ -7,7 +7,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:file:D:/project_java/vscode_spring_boot_junit/junit_project/h2/h2-junit
+    url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password: 
@@ -23,6 +23,7 @@ spring:
     show-sql: true
     properties:
       '[hibernate.format_sql]': true
+    defer-datasource-initialization: true
 
   output:
     ansi:
