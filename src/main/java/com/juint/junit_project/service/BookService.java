@@ -38,8 +38,9 @@ public class BookService {
     // 2. 책 목록
     public List<BookResDto> findAll() {
         List<BookResDto> dtos = bookRepository.findAll().stream()
-                .map((new BookResDto()::toDto))
+                .map((b) -> new BookResDto().toDto(b))
                 .collect(Collectors.toList());
+
         dtos.stream().forEach((b) -> {
             System.out.println(b.getId());
             System.out.println(b.getTitle());
