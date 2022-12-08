@@ -1,6 +1,7 @@
 package com.juint.junit_project.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,8 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.juint.junit_project.domain.Book;
 import com.juint.junit_project.domain.BookRepository;
 import com.juint.junit_project.util.MailSender;
-import com.juint.junit_project.web.dto.BookReqSaveDto;
-import com.juint.junit_project.web.dto.BookResDto;
+import com.juint.junit_project.web.dto.req.BookListRespDto;
+import com.juint.junit_project.web.dto.req.BookSaveDto;
+import com.juint.junit_project.web.dto.res.BookResDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,22 +25,22 @@ public class BookService {
 
     // 1. 책 쓰기
     @Transactional(rollbackFor = RuntimeException.class)
-    public BookResDto save(BookReqSaveDto dto) {
+    public BookResDto save(BookSaveDto dto) {
         Book book = bookRepository.save(dto.toEntity());
         if (book != null) {
             if (!mailSender.send()) {
                 throw new RuntimeException("메일이 전송되지 않았습니다.");
-            } else {
-
             }
+            return book.toDto();
+        } else {
+            return null;
         }
-        return new BookResDto().toDto(book);
     }
 
     // 2. 책 목록
-    public List<BookResDto> findAll() {
+    public BookListRespDto findAll() {
         List<BookResDto> dtos = bookRepository.findAll().stream()
-                .map((b) -> new BookResDto().toDto(b))
+                .map(Book::toDto)
                 .collect(Collectors.toList());
 
         dtos.stream().forEach((b) -> {
@@ -48,14 +50,16 @@ public class BookService {
             System.err.println("=================== 서비스 레이어");
         });
 
-        return dtos;
+        BookListRespDto bookListRespDto = BookListRespDto.builder().bookList(dtos).build();
+        return bookListRespDto;
     }
 
     // 3. 책 상세
     public BookResDto findById(Long id) {
-        Book book = bookRepository.findById(id).get();
+        Optional<Book> book = bookRepository.findById(id);
         if (book.isPresent()) {
-            return new BookResDto().toDto(book);
+            Book bookPS = book.get();
+            return bookPS.toDto();
         } else {
             throw new RuntimeException("해당 아이디를 찾을수 없습니다.");
         }
@@ -69,14 +73,14 @@ public class BookService {
 
     // 5. 책 수정
     @Transactional(rollbackFor = RuntimeException.class)
-    public BookResDto update(Long id, BookResDto dto) {
-        Book book = bookRepository.findById(id).get();
-        if (book.isPresent()) {
-            book.update(dto.getTitle(), dto.getAuthor());
-            return new BookResDto().toDto(bookRepository.save(book));
+    public BookResDto updateById(Long id, BookSaveDto dto) {
+        Optional<Book> bookOP = bookRepository.findById(id);
+        if (bookOP.isPresent()) {
+            Book bookPS = bookOP.get();
+            bookPS.update(dto.getTitle(), dto.getAuthor());
+            return bookPS.toDto();
         } else {
             throw new RuntimeException("해당 아이디를 찾을수 없습니다.");
         }
     }
-
 }
